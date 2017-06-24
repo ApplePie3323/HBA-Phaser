@@ -3,12 +3,19 @@ function init(){
 }
 
 function preload(){
-	
+game.load.image('background', 'images/background.png');
+game.load.json('level:1', 'data/level01.json'); 
 };
 
 function create(){
-	
+game.add.image(0,0, 'background');
+loadLevel(this.game.cache.getJSON('level:1'));
 }
+
+
+function loadLevel(data) {
+	console.log(data)
+};
 
 function update(){
 
