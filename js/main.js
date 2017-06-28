@@ -13,12 +13,17 @@ game.load.image('hero', 'images/hero_stopped.png');
 
 function move(direction){
     hero.body.velocity.x = direction * 200;
+
 }
 
 
 function loadLevel(data) {
+    platforms = game.add.group();
 	data.platforms.forEach(spawnPlatform, this);
 	spawnCharacters({hero: data.hero});
+    game.physics.arcade.gravity.y = 1200;
+    platforms = game.add.group();
+    data.platforms.forEach(spawnPlatform, this);
 };
 
 function spawnCharacters (data){
@@ -26,6 +31,7 @@ function spawnCharacters (data){
     hero.anchor.set(0.5, 0.5);
     game.physics.enable(hero);
     hero.body.collideWorldBounds = true;
+    game.physics.arcade.gravity.y = 1200;
 };
 
 function create(){
@@ -33,18 +39,31 @@ game.add.image(0,0, 'background');
 loadLevel(this.game.cache.getJSON('level:1'));
 leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
 rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
+spaceBar = game.input.keyboard.addKey(Phaser.Keyboard.UP)
 }
 
 
 
 function spawnPlatform(platform) {
     game.add.sprite(platform.x, platform.y, platform.image);
+    var sprite = platforms.create(platform.x, platform.y, platform.image);
+    game.physics.enable(sprite);
+    sprite.body.allowGravity = false; 
+    sprite.body.immovable = true; 
+
+
 };
 
 function update(){
-handleInput();
+    handleCollisions();
+    handleInput();
 
 }
+
+
+function handleCollisions(){
+   game.physics.arcade.collide(hero, platforms);
+};
 
 
 function handleInput(){
@@ -52,12 +71,12 @@ function handleInput(){
 		move(-1);
 	}
 	else if (rightKey.isDown) { // move hero right
-		move(1)
+		move(1); 
 	}
-	else{
+	else {
 		move(0);
 	}
-}
+}; 
 
 
 function init(){
@@ -73,10 +92,10 @@ function move(direction){
     else if (hero.body.velocity.x > 0) {
         hero.scale.x = 1;
     }
-}
+} 
 
 
 
 
 //Create a game state
-var game = new Phaser.Game(960, 600, Phaser.AUTO, 'game', {init: init, preload: preload, create: create, update: update});jhfjhgjgkhjhgk
+var game = new Phaser.Game(960, 600, Phaser.AUTO, 'game', {init: init, preload: preload, create: create, update: update});
