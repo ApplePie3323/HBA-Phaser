@@ -8,6 +8,8 @@ game.load.image('grass:4x1', 'images/grass_4x1.png');
 game.load.image('grass:2x1', 'images/grass_2x1.png');
 game.load.image('grass:1x1', 'images/grass_1x1.png');
 game.load.image('hero', 'images/hero_stopped.png');
+//game.load.audio('sfx:jump', 'audio/jump.wav');
+game.load.spritesheet('coin', 'images/coin_animated.png', 22, 22);
 }
 
 
@@ -24,6 +26,9 @@ function loadLevel(data) {
     game.physics.arcade.gravity.y = 1200;
     platforms = game.add.group();
     data.platforms.forEach(spawnPlatform, this);
+        platforms = game.add.group();
+    spawnCharacters({hero: data.hero, spiders: data.spiders});  
+    data.coins.forEach(spawnCoin, this);
 };
 
 function spawnCharacters (data){
@@ -39,7 +44,11 @@ game.add.image(0,0, 'background');
 loadLevel(this.game.cache.getJSON('level:1'));
 leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
 rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
-spaceBar = game.input.keyboard.addKey(Phaser.Keyboard.UP)
+upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
+    upKey.onDown.add(function(){
+        jump();
+        sfxJump = game.add.audio('sfx:jump');
+    });
 }
 
 
@@ -96,6 +105,19 @@ function move(direction){
 
 
 
+function jump(){
+    var canJump = hero.body.touching.down;
+    if (canJump) {
+        hero.body.velocity.y = -600;
+    }
+    return canJump;
+}
+
+
+function spawnCoin(coin) {
+    var sprite = coins.create(coin.x, coin.y, 'coin');
+    sprite.anchor.set(0.5, 0.5);
+};
 
 //Create a game state
 var game = new Phaser.Game(960, 600, Phaser.AUTO, 'game', {init: init, preload: preload, create: create, update: update});
