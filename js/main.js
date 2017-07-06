@@ -1,10 +1,15 @@
 var coinPickupCount = 0;
+var hasKey = false;
+var level = 0;
+
 function init(){
     
 }
-function preload (){
+
+function preload(){
     game.load.image('background', 'images/AoTbackdrop.png');
     game.load.json('level:1', 'data/level01.json');
+    game.load.json('level:0', 'data/level00.json');
     //spawn platform sprites
     game.load.image('ground', 'images/ground.png');
     game.load.image('grass:8x1', 'images/grass_8x1.png');
@@ -13,28 +18,35 @@ function preload (){
     game.load.image('grass:2x1', 'images/grass_2x1.png');
     game.load.image('grass:1x1', 'images/grass_1x1.png');
 
-    // load the hero image
+    // load the hero image=
     game.load.image('hero', 'images/download (2).png');
     game.load.audio('sfx:jump', 'audio/jump.wav');
     game.load.audio('sfx:coin', 'audio/coin.wav');
+    game.load.audio('sfx:stomp', 'audio/stomp.wav');
     game.load.spritesheet('coin', 'images/download (1).png', 22, 22);
-    game.load.spritesheet('spider', 'images/download (4).png', 30, 22);
+    game.load.spritesheet('spider', 'images/spider.png', 42, 32);
     game.load.image('invisible-wall', 'images/invisible_wall.png');
     game.load.image('icon:coin', 'images/download (1).png');
     game.load.image('font:numbers', 'images/numbers.png');
     game.load.spritesheet('door', 'images/door.png', 42, 66);
     game.load.image('key', 'images/key.png');
+    game.load.audio('sfx:key', 'audio/key.wav');
+    game.load.audio('sfx:door', 'audio/door.wav');
+    game.load.spritesheet('icon:key', 'images/key_icon.png', 34, 30);
 
-}
+};
 
 function create(){
     game.add.image(0, 0, 'background');
     sfxJump = game.add.audio('sfx:jump');
     sfxCoin = game.add.audio('sfx:coin');
     sfxStomp = game.add.audio('sfx:stomp');
+    sfxKey = game.add.audio('sfx:key');
+    sfxDoor = game.add.audio('sfx:door');
+    keyIcon = game.make.image(0, 19, 'icon:key');
+    keyIcon.anchor.set(0, 0.5);
     coinIcon = game.make.image(40, 0, 'icon:coin');
-
-    loadLevel(this.game.cache.getJSON('level:1'));
+    loadLevel(this.game.cache.getJSON('level:' + level));
     leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
     rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
     upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
@@ -42,22 +54,26 @@ function create(){
         jump();
     });
 
-    //Adding coin icon
     hud = game.add.group();
     hud.add(coinIcon);
     hud.position.set(10, 10);
 
+    // ? - Declare a variable 'NUMBERS_STR' and set its value as string '0123456789X '
     var NUMBERS_STR = '0123456789X ';
     coinFont = game.add.retroFont('font:numbers', 20, 26, NUMBERS_STR, 6);
+
     var coinScoreImg = game.make.image(100 + coinIcon.width, coinIcon.height / 2, coinFont);
     coinScoreImg.anchor.set(1, 0.5);
+
     hud.add(coinScoreImg);
+    hud.add(keyIcon);
 }
 
 function update(){
     handleInput();
     handleCollisions();
     moveSpider();
+    keyIcon.frame = hasKey ? 1 : 0;
 }
 
 function loadLevel(data) {
@@ -70,7 +86,6 @@ function loadLevel(data) {
     enemyWalls.visible = false;
     data.platforms.forEach(spawnPlatform, this);
     // spawn hero and enemies
-    
     spawnCharacters({hero: data.hero, spiders: data.spiders});  
     spawnDoor(data.door.x, data.door.y);
     spawnKey(data.key.x, data.key.y);
@@ -101,6 +116,9 @@ function spawnCharacters (data) {
         spiders.add(sprite);
         sprite.anchor.set(0.5);
         // animation
+        sprite.animations.add('crawl', [0, 1, 2], 8, true);
+        sprite.animations.add('die', [0, 4, 0, 4, 0, 4, 3, 3, 3, 3, 3, 3], 12);
+        sprite.animations.play('crawl');
         game.physics.enable(sprite);
         sprite.body.collideWorldBounds = true;
         // ? - Set the sprite.body.velocity.x to value 100
@@ -115,7 +133,7 @@ function move(direction){
     }
     else if (hero.body.velocity.x > 0) {
         hero.scale.x = 1;
-    };
+    }
 }
 
 function handleInput(){
@@ -124,10 +142,10 @@ function handleInput(){
     }
     else if (rightKey.isDown) { // move hero right
         move(1);
-    }
+    } 
     else {
         move(0);
-    };
+    }
 }
 function handleCollisions(){
    game.physics.arcade.collide(hero, platforms);
@@ -135,6 +153,12 @@ function handleCollisions(){
    game.physics.arcade.collide(spiders, enemyWalls);
    game.physics.arcade.overlap(hero, coins, onHeroVsCoin, null);
    game.physics.arcade.overlap(hero, spiders, onHeroVsEnemy, null);
+   game.physics.arcade.overlap(hero, key, onHeroVsKey, null);
+   game.physics.arcade.overlap(hero, door, onHeroVsDoor,
+        // ignore if there is no key or the player is on air
+        function (hero, door) {
+            return hasKey && hero.body.touching.down;
+        });
 };
 
 function jump(){
@@ -143,7 +167,7 @@ function jump(){
     if (canJump) {
         hero.body.velocity.y = -600;
         sfxJump.play();
-    };
+    }
     return canJump;
 }
 
@@ -190,7 +214,7 @@ function onHeroVsEnemy(hero, enemy){
     else { // game over -> restart the game
         sfxStomp.play();
         game.state.restart();
-    }; 
+    }
 }
 
 function die(spider) {
@@ -232,6 +256,24 @@ function spawnKey(x, y){
     key.anchor.set(0.5, 0.5);
     game.physics.enable(key);
     key.body.allowGravity = false;
+}
+
+function onHeroVsKey(hero, key){
+    sfxKey.play();
+    key.kill();
+    hasKey = true;
+}
+
+function onHeroVsDoor(hero, door){
+    sfxDoor.play();
+    if (level === 0){
+        level = level + 1;
+    }
+    else {
+        level = 0;
+    }
+    hasKey = false;
+    game.state.restart();
 }
 
 //Create a game state
