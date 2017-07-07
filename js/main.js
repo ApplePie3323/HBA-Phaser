@@ -8,6 +8,7 @@ function init(){
 
 function preload(){
     game.load.image('background', 'images/AoTbackdrop.png');
+    game.load.json('level:2', 'data/level02.json');
     game.load.json('level:1', 'data/level01.json');
     game.load.json('level:0', 'data/level00.json');
     //spawn platform sprites
@@ -15,8 +16,8 @@ function preload(){
     game.load.image('grass:8x1', 'images/grass_8x1.png');
     game.load.image('grass:6x1', 'images/grass_6x1.png');
     game.load.image('grass:4x1', 'images/grass_4x1.png');
-    game.load.image('grass:2x1', 'images/grass_2x1.png');
-    game.load.image('grass:1x1', 'images/grass_1x1.png');
+    game.load.image('grass:2x1', 'images/wall_2x1.gif');
+    game.load.image('grass:1x1', 'images/wall_1x1.gif');
 
     // load the hero image=
     game.load.image('hero', 'images/download (2).png');
@@ -24,7 +25,7 @@ function preload(){
     game.load.audio('sfx:coin', 'audio/coin.wav');
     game.load.audio('sfx:stomp', 'audio/stomp.wav');
     game.load.spritesheet('coin', 'images/download (1).png', 22, 22);
-    game.load.spritesheet('spider', 'images/spider.png', 42, 32);
+    game.load.spritesheet('spider', 'images/download (4).png', 42, 32);
     game.load.image('invisible-wall', 'images/invisible_wall.png');
     game.load.image('icon:coin', 'images/download (1).png');
     game.load.image('font:numbers', 'images/numbers.png');
@@ -46,7 +47,8 @@ function create(){
     keyIcon = game.make.image(0, 19, 'icon:key');
     keyIcon.anchor.set(0, 0.5);
     coinIcon = game.make.image(40, 0, 'icon:coin');
-    loadLevel(this.game.cache.getJSON('level:' + level));
+    //loadLevel(this.game.cache.getJSON('level:' + level));
+    loadLevel(this.game.cache.getJSON('level:2' + level));
     leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
     rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
     upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
@@ -267,6 +269,9 @@ function onHeroVsKey(hero, key){
 function onHeroVsDoor(hero, door){
     sfxDoor.play();
     if (level === 0){
+        level = level + 1;
+    }
+     else if (level === 1){
         level = level + 1;
     }
     else {
