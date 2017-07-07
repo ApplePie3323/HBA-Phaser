@@ -8,12 +8,11 @@ function init(){
 
 function preload(){
     game.load.image('background', 'images/AoTbackdrop.png');
-    game.load.json('level:2', 'data/level02.json');
     game.load.json('level:1', 'data/level01.json');
     game.load.json('level:0', 'data/level00.json');
     //spawn platform sprites
     game.load.image('ground', 'images/ground.png');
-    game.load.image('grass:8x1', 'images/grass_8x1.png');
+    game.load.image('grass:8x1', 'images/wall 8x1.png');
     game.load.image('grass:6x1', 'images/grass_6x1.png');
     game.load.image('grass:4x1', 'images/grass_4x1.png');
     game.load.image('grass:2x1', 'images/wall_2x1.gif');
@@ -47,8 +46,7 @@ function create(){
     keyIcon = game.make.image(0, 19, 'icon:key');
     keyIcon.anchor.set(0, 0.5);
     coinIcon = game.make.image(40, 0, 'icon:coin');
-    //loadLevel(this.game.cache.getJSON('level:' + level));
-    loadLevel(this.game.cache.getJSON('level:2' + level));
+    loadLevel(this.game.cache.getJSON('level:' + level));
     leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
     rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
     upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
@@ -109,7 +107,7 @@ function spawnPlatform(platform) {
 function spawnCharacters (data) {
     // spawn hero
     hero = game.add.sprite(data.hero.x, data.hero.y, 'hero');
-    hero.anchor.set(0.6, 0.7);
+    hero.anchor.set(0.5, 0.5);
     //Make the main character use the physics engine for movement
     game.physics.enable(hero);
     hero.body.collideWorldBounds = true;
@@ -269,9 +267,6 @@ function onHeroVsKey(hero, key){
 function onHeroVsDoor(hero, door){
     sfxDoor.play();
     if (level === 0){
-        level = level + 1;
-    }
-     else if (level === 1){
         level = level + 1;
     }
     else {
